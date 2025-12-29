@@ -1,79 +1,49 @@
-Telegram.WebApp.ready();
-Telegram.WebApp.expand();
+const API_URL = "https://open.er-api.com/v6/latest/";
 
-const API_URL = "https://open.er-api.com/v6/latest/USD";
-const CACHE_TIME = 60 * 60 * 1000;
-
-let rates = {};
+const currencies = {
+    RUB: "🇷🇺 Российский рубль",
+    UAH: "🇺🇦 Украинская гривна",
+    USD: "🇺🇸 Доллар США",
+    EUR: "🇪🇺 Евро",
+    BYN: "🇧🇾 Белорусский рубль",
+    TRY: "🇹🇷 Турецкая лира"
+};
 
 const amountInput = document.getElementById("amount");
 const fromSelect = document.getElementById("from");
 const toSelect = document.getElementById("to");
-const result = document.getElementById("result");
-const rate = document.getElementById("rate");
+const resultDiv = document.getElementById("result");
+const rateDiv = document.getElementById("rate");
+const convertBtn = document.getElementById("convert");
 
-async function loadRates() {
-    const cache = JSON.parse(localStorage.getItem("ratesCache") || "{}");
-
-    if (cache.time && Date.now() - cache.time < CACHE_TIME) {
-        rates = cache.rates;
-        initSelects();
-        convert();
-        return;
-    }
-
-    const res = await fetch(API_URL);
-    const data = await res.json();
-
-    rates = data.rates;
-
-    localStorage.setItem("ratesCache", JSON.stringify({
-        time: Date.now(),
-        rates
-    }));
-
-    initSelects();
-    convert();
+for (const code in currencies) {
+    fromSelect.add(new Option(currencies[code], code));
+    toSelect.add(new Option(currencies[code], code));
 }
 
-function initSelects() {
-    fromSelect.innerHTML = "";
-    toSelect.innerHTML = "";
+fromSelect.value = "USD";
+toSelect.value = "RUB";
 
-    Object.keys(rates).forEach(code => {
-        fromSelect.add(new Option(code, code));
-        toSelect.add(new Option(code, code));
-    });
-
-    fromSelect.value = "USD";
-    toSelect.value = "EUR";
-
-    amountInput.oninput = convert;
-    fromSelect.onchange = convert;
-    toSelect.onchange = convert;
-}
-
-function convert() {
+convertBtn.onclick = async () => {
     const amount = parseFloat(amountInput.value);
+    if (!amount || amount <= 0) return;
+
     const from = fromSelect.value;
     const to = toSelect.value;
 
-    if (!amount) {
-        result.textContent = "Введите сумму";
-        rate.textContent = "";
-        return;
+    resultDiv.textContent = "Загрузка…";
+    rateDiv.textContent = "";
+
+    try {
+        const res = await fetch(API_URL + from);
+        const data = await res.json();
+
+        const rate = data.rates[to];
+        const converted = (amount * rate).toFixed(2);
+
+        resultDiv.textContent = `${converted} ${to}`;
+        rateDiv.textContent = `1 ${from} = ${rate.toFixed(4)} ${to}`;
+    } catch {
+        resultDiv.textContent = "Ошибка загрузки курса";
     }
-
-    const value = amount * (rates[to] / rates[from]);
-
-    result.textContent = `${amount.toFixed(2)} ${from} = ${value.toFixed(2)} ${to}`;
-    rate.textContent = `1 ${from} = ${(rates[to] / rates[from]).toFixed(4)} ${to}`;
-}
-
-function swap() {
-    [fromSelect.value, toSelect.value] = [toSelect.value, fromSelect.value];
-    convert();
-    Telegram.WebApp.HapticFeedback.impactOccurred("light");
-}
-
-loadRates();
+};
