@@ -41,6 +41,8 @@
             margin-top: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center;
         }
         .rate-info { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; margin: 10px 0; font-size: 14px; }
+        .loading { text-align: center; padding: 20px; }
+        .error { background: rgba(255,0,0,0.3); color: #ffdddd; }
     </style>
 </head>
 <body>
@@ -50,7 +52,7 @@
         
         <div class="category" onclick="showConverter('currency')">
             <h3>💱 Валюты</h3>
-            <p>USD → RUB / EUR → UAH / любые пары</p>
+            <p>USD → RUB / EUR → UAH / реальные курсы API</p>
         </div>
         
         <div class="category" onclick="showConverter('length')">
@@ -90,7 +92,7 @@
                 </select>
             </div>
             
-            <div id="result">Выбери валюты и введи сумму</div>
+            <div id="result" class="loading">Загружаем актуальные курсы...</div>
             <div id="rate-info" class="rate-info" style="display: none;"></div>
         </div>
     </div>
@@ -99,20 +101,45 @@
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
         
-        // Курсы валют (заглушка, потом реальный API)
-        const rates = {
-            USD: { RUB: 97.5, UAH: 41.2, EUR: 0.95, KZT: 485, CNY: 7.1 },
-            EUR: { RUB: 102.8, UAH: 43.5, USD: 1.05, KZT: 511, CNY: 7.5 },
-            RUB: { USD: 0.0103, UAH: 0.423, EUR: 0.0097, KZT: 4.97, CNY: 0.073 },
-            UAH: { RUB: 2.36, USD: 0.0243, EUR: 0.023, KZT: 11.75, CNY: 0.172 },
-            KZT: { RUB: 0.201, USD: 0.00206, EUR: 0.00196, UAH: 0.085, CNY: 0.0276 },
-            CNY: { RUB: 13.73, USD: 0.141, EUR: 0.133, UAH: 5.81, KZT: 36.23 }
-        };
-
+        let rates = null;
+        let lastUpdate = 0;
+        
+        // Загрузка реальных курсов
+        async function loadRates() {
+            try {
+                const now = Date.now();
+                // Обновляем каждые 5 минут
+                if (now - lastUpdate < 5 * 60 * 1000 && rates) return;
+                
+                document.getElementById('result').textContent = '🔄 Загрузка курсов...';
+                
+                const response = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=EUR,RUB,UAH,KZT,CNY');
+                const data = await response.json();
+                
+                rates = {
+                    USD: data.rates,
+                    EUR: { RUB: data.rates.RUB / data.rates.EUR, UAH: data.rates.UAH / data.rates.EUR, USD: 1 / data.rates.EUR, KZT: data.rates.KZT / data.rates.EUR, CNY: data.rates.CNY / data.rates.EUR },
+                    RUB: { USD: 1 / data.rates.RUB, EUR: data.rates.EUR / data.rates.RUB, UAH: data.rates.UAH / data.rates.RUB, KZT: data.rates.KZT / data.rates.RUB, CNY: data.rates.CNY / data.rates.RUB },
+                    UAH: { USD: 1 / data.rates.UAH, EUR: data.rates.EUR / data.rates.UAH, RUB: data.rates.RUB / data.rates.UAH, KZT: data.rates.KZT / data.rates.UAH, CNY: data.rates.CNY / data.rates.UAH },
+                    KZT: { USD: 1 / data.rates.KZT, EUR: data.rates.EUR / data.rates.KZT, RUB: data.rates.RUB / data.rates.KZT, UAH: data.rates.UAH / data.rates.KZT, CNY: data.rates.CNY / data.rates.KZT },
+                    CNY: { USD: 1 / data.rates.CNY, EUR: data.rates.EUR / data.rates.CNY, RUB: data.rates.RUB / data.rates.CNY, UAH: data.rates.UAH / data.rates.CNY, KZT: data.rates.KZT / data.rates.CNY }
+                };
+                
+                lastUpdate = now;
+                document.getElementById('result').textContent = 'Курсы загружены! Введи сумму.';
+                convertCurrency(); // Пересчитываем если поля заполнены
+            } catch (error) {
+                document.getElementById('result').innerHTML = '❌ Ошибка загрузки курсов<br>Проверь интернет';
+                document.getElementById('result').className = 'error';
+                console.error('API error:', error);
+            }
+        }
+        
         function showConverter(type) {
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('currency-converter').classList.add('active');
             Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            loadRates(); // Загружаем курсы при открытии
         }
         
         function showMainMenu() {
@@ -126,16 +153,18 @@
             const from = document.getElementById('fromCurrency').value;
             const to = document.getElementById('toCurrency').value;
             
-            if (amount && rates[from] && rates[from][to]) {
+            if (amount && rates && rates[from] && rates[from][to]) {
                 const result = amount * rates[from][to];
-                document.getElementById('result').textContent = `${amount} ${from} = ${result.toFixed(2)} ${to}`;
+                document.getElementById('result').textContent = `${amount.toLocaleString()} ${from} = ${result.toLocaleString()} ${to}`;
+                document.getElementById('result').className = '';
+                
                 document.getElementById('rate-info').style.display = 'block';
-                document.getElementById('rate-info').textContent = `Курс: 1 ${from} = ${rates[from][to]} ${to}`;
-            } else {
-                document.getElementById('result').textContent = 'Выбери валюты и введи сумму';
-                document.getElementById('rate-info').style.display = 'none';
+                document.getElementById('rate-info').textContent = `📊 Курс: 1 ${from} = ${rates[from][to].toFixed(4)} ${to} (обновлено ${new Date(lastUpdate).toLocaleTimeString()})`;
             }
         }
+        
+        // Загрузка при старте
+        loadRates();
     </script>
 </body>
 </html>
