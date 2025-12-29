@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Конвертер</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; margin: 0; padding: 20px; min-height: 100vh;
+        }
+        .container { max-width: 400px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 30px; }
+        .category { 
+            background: rgba(255,255,255,0.1); border-radius: 15px; 
+            padding: 20px; margin: 10px 0; backdrop-filter: blur(10px);
+        }
+        button { 
+            width: 100%; padding: 15px; border: none; border-radius: 10px; 
+            background: rgba(255,255,255,0.2); color: white; font-size: 16px;
+            margin: 5px 0; cursor: pointer;
+        }
+        button:hover { background: rgba(255,255,255,0.3); }
+        #result { 
+            background: rgba(0,0,0,0.3); border-radius: 10px; 
+            padding: 15px; text-align: center; margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌟 Универсальный Конвертер</h1>
+        
+        <div class="category">
+            <h3>💱 Валюты</h3>
+            <button onclick="selectCategory('currency')">USD → RUB / EUR → BTC</button>
+        </div>
+        
+        <div class="category">
+            <h3>📏 Длина</h3>
+            <button onclick="selectCategory('length')">м → км / футы → мили</button>
+        </div>
+        
+        <div class="category">
+            <h3>⚖️ Вес</h3>
+            <button onclick="selectCategory('weight')">кг → т / фунты → унции</button>
+        </div>
+        
+        <div class="category">
+            <h3>🌡️ Температура</h3>
+            <button onclick="selectCategory('temp')">°C → °F / Кельвины</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+        
+        function selectCategory(cat) {
+            document.getElementById('result').innerHTML = 
+                `✅ Выбрано: ${cat.toUpperCase()}<br>
+                 <small>Скоро здесь будет калькулятор!</small>`;
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+        
+        // Отправка данных боту (пока заглушка)
+        function sendResult(value) {
+            Telegram.WebApp.sendData(JSON.stringify({category: value}));
+        }
+    </script>
+</body>
+</html>
