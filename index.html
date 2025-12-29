@@ -12,9 +12,9 @@
         <h1>QuickConv</h1>
 
         <div class="converter-form">
-            <input type="number" id="amount" placeholder="Сумма" value="100" min="0" step="0.01" oninput="convert()">
+            <input type="number" id="amount" placeholder="100" value="100" min="0" step="0.01" oninput="convert()">
 
-            <div class="select-wrapper">
+            <div style="position: relative;">
                 <select id="fromCurrency" onchange="convert()">
                     <option value="USD">🇺🇸 USD</option>
                     <option value="EUR">🇪🇺 EUR</option>
