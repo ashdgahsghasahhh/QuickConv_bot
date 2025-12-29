@@ -2,30 +2,28 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>QuickConv</title>
-
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Currency Converter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="container">
-
-    <h1>QuickConv</h1>
+<div class="app">
+    <h1>💱 Валютный конвертер</h1>
 
     <div class="card">
-        <input type="number" id="amount" value="100" min="0" step="0.01">
+        <input id="amount" type="number" placeholder="Сумма" value="1">
 
-        <select id="from"></select>
-        <select id="to"></select>
+        <div class="select-group">
+            <select id="from"></select>
+            <span class="arrow">→</span>
+            <select id="to"></select>
+        </div>
 
-        <button class="swap" onclick="swap()">↔ Поменять</button>
+        <button id="convert">Конвертировать</button>
 
-        <div id="result" class="result">Загрузка курсов…</div>
+        <div id="result" class="result"></div>
         <div id="rate" class="rate"></div>
     </div>
-
 </div>
 
 <script src="app.js"></script>
