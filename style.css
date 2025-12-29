@@ -1,7 +1,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #121212;
+    background: linear-gradient(135deg, #1a1a1a, #121212);
     color: white;
     min-height: 100vh;
     padding: 20px;
@@ -48,12 +48,6 @@ input, select {
 
 input::placeholder { color: rgba(255,255,255,0.6); }
 
-.select-wrapper {
-    display: flex;
-    gap: 10px;
-    position: relative;
-}
-
 .swap-btn {
     position: absolute;
     top: 0;
@@ -81,7 +75,7 @@ input::placeholder { color: rgba(255,255,255,0.6); }
     font-size: 26px;
     font-weight: 600;
     border-radius: 20px;
-    margin-bottom: 24px; /* отступ перед кнопкой "Сохранить" */
+    margin-bottom: 24px;
 }
 
 #saveBtn {
