@@ -10,66 +10,131 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white; margin: 0; padding: 20px; min-height: 100vh;
+            overflow-x: hidden;
         }
         .container { max-width: 400px; margin: 0 auto; }
         h1 { text-align: center; margin-bottom: 30px; }
         .category { 
             background: rgba(255,255,255,0.1); border-radius: 15px; 
             padding: 20px; margin: 10px 0; backdrop-filter: blur(10px);
+            cursor: pointer; transition: all 0.3s;
         }
+        .category:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
         button { 
             width: 100%; padding: 15px; border: none; border-radius: 10px; 
             background: rgba(255,255,255,0.2); color: white; font-size: 16px;
             margin: 5px 0; cursor: pointer;
         }
         button:hover { background: rgba(255,255,255,0.3); }
+        
+        /* Страница конвертера */
+        .converter-page { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
+        .converter-page.active { display: block; }
+        .back-btn { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.3); padding: 10px 15px; border-radius: 20px; }
+        
+        .currency-select { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin: 60px 0 20px; }
+        select, input { width: 100%; padding: 15px; border: none; border-radius: 10px; background: rgba(255,255,255,0.2); color: white; font-size: 16px; margin: 10px 0; }
+        select option { background: #667eea; color: white; }
         #result { 
-            background: rgba(0,0,0,0.3); border-radius: 10px; 
-            padding: 15px; text-align: center; margin-top: 20px;
+            background: rgba(0,255,0,0.3); border-radius: 15px; 
+            padding: 20px; text-align: center; font-size: 24px; font-weight: bold;
+            margin-top: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center;
         }
+        .rate-info { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; margin: 10px 0; font-size: 14px; }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Главное меню -->
+    <div id="main-menu" class="container">
         <h1>🌟 Универсальный Конвертер</h1>
         
-        <div class="category">
+        <div class="category" onclick="showConverter('currency')">
             <h3>💱 Валюты</h3>
-            <button onclick="selectCategory('currency')">USD → RUB / EUR → BTC</button>
+            <p>USD → RUB / EUR → UAH / любые пары</p>
         </div>
         
-        <div class="category">
+        <div class="category" onclick="showConverter('length')">
             <h3>📏 Длина</h3>
-            <button onclick="selectCategory('length')">м → км / футы → мили</button>
+            <p>м → км / футы → мили</p>
         </div>
         
-        <div class="category">
+        <div class="category" onclick="showConverter('weight')">
             <h3>⚖️ Вес</h3>
-            <button onclick="selectCategory('weight')">кг → т / фунты → унции</button>
+            <p>кг → т / фунты → унции</p>
         </div>
-        
-        <div class="category">
-            <h3>🌡️ Температура</h3>
-            <button onclick="selectCategory('temp')">°C → °F / Кельвины</button>
+    </div>
+
+    <!-- Страница конвертера валют -->
+    <div id="currency-converter" class="converter-page">
+        <button class="back-btn" onclick="showMainMenu()">← Назад</button>
+        <div class="container">
+            <h2 style="text-align: center; margin: 20px 0;">💱 Конвертер валют</h2>
+            
+            <div class="currency-select">
+                <input type="number" id="amount" placeholder="Сумма" value="100" oninput="convertCurrency()">
+                <select id="fromCurrency" onchange="convertCurrency()">
+                    <option value="USD">🇺🇸 USD</option>
+                    <option value="EUR">🇪🇺 EUR</option>
+                    <option value="RUB">🇷🇺 RUB</option>
+                    <option value="UAH">🇺🇦 UAH</option>
+                    <option value="KZT">🇰🇿 KZT</option>
+                    <option value="CNY">🇨🇳 CNY</option>
+                </select>
+                <select id="toCurrency" onchange="convertCurrency()">
+                    <option value="RUB">🇷🇺 RUB</option>
+                    <option value="USD">🇺🇸 USD</option>
+                    <option value="EUR">🇪🇺 EUR</option>
+                    <option value="UAH">🇺🇦 UAH</option>
+                    <option value="KZT">🇰🇿 KZT</option>
+                    <option value="CNY">🇨🇳 CNY</option>
+                </select>
+            </div>
+            
+            <div id="result">Выбери валюты и введи сумму</div>
+            <div id="rate-info" class="rate-info" style="display: none;"></div>
         </div>
-        
-        <div id="result"></div>
     </div>
 
     <script>
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
         
-        function selectCategory(cat) {
-            document.getElementById('result').innerHTML = 
-                `✅ Выбрано: ${cat.toUpperCase()}<br>
-                 <small>Скоро здесь будет калькулятор!</small>`;
-            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        // Курсы валют (заглушка, потом реальный API)
+        const rates = {
+            USD: { RUB: 97.5, UAH: 41.2, EUR: 0.95, KZT: 485, CNY: 7.1 },
+            EUR: { RUB: 102.8, UAH: 43.5, USD: 1.05, KZT: 511, CNY: 7.5 },
+            RUB: { USD: 0.0103, UAH: 0.423, EUR: 0.0097, KZT: 4.97, CNY: 0.073 },
+            UAH: { RUB: 2.36, USD: 0.0243, EUR: 0.023, KZT: 11.75, CNY: 0.172 },
+            KZT: { RUB: 0.201, USD: 0.00206, EUR: 0.00196, UAH: 0.085, CNY: 0.0276 },
+            CNY: { RUB: 13.73, USD: 0.141, EUR: 0.133, UAH: 5.81, KZT: 36.23 }
+        };
+
+        function showConverter(type) {
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('currency-converter').classList.add('active');
+            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
         }
         
-        // Отправка данных боту (пока заглушка)
-        function sendResult(value) {
-            Telegram.WebApp.sendData(JSON.stringify({category: value}));
+        function showMainMenu() {
+            document.getElementById('currency-converter').classList.remove('active');
+            document.getElementById('main-menu').style.display = 'block';
+            Telegram.WebApp.HapticFeedback.selectionChanged();
+        }
+        
+        function convertCurrency() {
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const from = document.getElementById('fromCurrency').value;
+            const to = document.getElementById('toCurrency').value;
+            
+            if (amount && rates[from] && rates[from][to]) {
+                const result = amount * rates[from][to];
+                document.getElementById('result').textContent = `${amount} ${from} = ${result.toFixed(2)} ${to}`;
+                document.getElementById('rate-info').style.display = 'block';
+                document.getElementById('rate-info').textContent = `Курс: 1 ${from} = ${rates[from][to]} ${to}`;
+            } else {
+                document.getElementById('result').textContent = 'Выбери валюты и введи сумму';
+                document.getElementById('rate-info').style.display = 'none';
+            }
         }
     </script>
 </body>
