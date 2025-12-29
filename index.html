@@ -1,50 +1,56 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>QuickConv</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>QuickConv</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="container">
+        <h1>QuickConv</h1>
 
-<div class="emoji-bg" id="emoji-bg"></div>
+        <div class="converter-form">
+            <input type="number" id="amount" placeholder="Сумма" value="100" min="0" step="0.01" oninput="convert()">
 
-<div class="app">
-    <h1>💱 Валютный конвертер</h1>
-
-    <div class="card">
-        <input id="amount" type="number" placeholder="Сумма" value="1">
-
-        <div class="select-group">
-            <select id="from"></select>
-            <span class="arrow">→</span>
-            <select id="to"></select>
+            <div class="select-wrapper">
+                <select id="fromCurrency" onchange="convert()">
+                    <option value="USD">🇺🇸 USD</option>
+                    <option value="EUR">🇪🇺 EUR</option>
+                    <option value="RUB">🇷🇺 RUB</option>
+                    <option value="UAH">🇺🇦 UAH</option>
+                    <option value="BYN">🇧🇾 BYN</option>
+                    <option value="TRY">🇹🇷 TRY</option>
+                </select>
+                <button class="swap-btn" onclick="swap()">↔</button>
+                <select id="toCurrency" onchange="convert()">
+                    <option value="RUB">🇷🇺 RUB</option>
+                    <option value="USD">🇺🇸 USD</option>
+                    <option value="EUR">🇪🇺 EUR</option>
+                    <option value="UAH">🇺🇦 UAH</option>
+                    <option value="BYN">🇧🇾 BYN</option>
+                    <option value="TRY">🇹🇷 TRY</option>
+                </select>
+            </div>
         </div>
 
-        <button id="convert">Конвертировать</button>
+        <div id="result">Введите сумму для конвертации</div>
 
-        <div id="result" class="result"></div>
-        <div id="rate" class="rate"></div>
-
-        <button id="saveBtn" class="hidden">💾 Сохранить конвертацию</button>
-        <div id="commentSection" class="hidden">
-            <input id="commentInput" type="text" placeholder="Введите комментарий к этой конвертации">
-            <button id="sendComment">Отправить</button>
-        </div>
+        <button id="saveBtn" onclick="saveConversion()">Сохранить конвертацию</button>
 
         <div class="external-buttons">
             <a href="https://ggsel.net/catalog/product/fortnite-v-bucks-turciia-epic-games-102097138" target="_blank">
-                <img src="images/V-bucks.png" alt="V-bucks"><span>Купить V-bucks</span>
+                <img src="V-bucks.png" alt="V-bucks">
+                Купить V-bucks
             </a>
             <a href="https://ggsel.net/catalog/product/popolnenie-steam-momentalno-101990320" target="_blank">
-                <img src="images/Steam.png" alt="Steam"><span>Пополнить Steam</span>
+                <img src="Steam.png" alt="Steam">
+                Пополнить Steam
             </a>
         </div>
     </div>
-</div>
 
-<script src="app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
