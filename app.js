@@ -1,38 +1,16 @@
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 
-/* =====================
-   CONFIG
-===================== */
-
-const API_URL = "https://open.er-api.com/v6/latest/";
-const CACHE_TIME = 60 * 60 * 1000; // 1 час
+const API_URL = "https://open.er-api.com/v6/latest/USD";
+const CACHE_TIME = 60 * 60 * 1000;
 
 let rates = {};
-const base = "USD";
-
-/* =====================
-   DOM
-===================== */
 
 const amountInput = document.getElementById("amount");
 const fromSelect = document.getElementById("from");
 const toSelect = document.getElementById("to");
 const result = document.getElementById("result");
 const rate = document.getElementById("rate");
-
-/* =====================
-   NAVIGATION
-===================== */
-
-function openPage(id) {
-    document.querySelector(".page.active").classList.remove("active");
-    document.getElementById(id).classList.add("active");
-}
-
-/* =====================
-   LOAD RATES
-===================== */
 
 async function loadRates() {
     const cache = JSON.parse(localStorage.getItem("ratesCache") || "{}");
@@ -44,7 +22,7 @@ async function loadRates() {
         return;
     }
 
-    const res = await fetch(API_URL + base);
+    const res = await fetch(API_URL);
     const data = await res.json();
 
     rates = data.rates;
@@ -75,16 +53,12 @@ function initSelects() {
     toSelect.onchange = convert;
 }
 
-/* =====================
-   CONVERT
-===================== */
-
 function convert() {
     const amount = parseFloat(amountInput.value);
     const from = fromSelect.value;
     const to = toSelect.value;
 
-    if (!amount || !rates[from] || !rates[to]) {
+    if (!amount) {
         result.textContent = "Введите сумму";
         rate.textContent = "";
         return;
@@ -101,9 +75,5 @@ function swap() {
     convert();
     Telegram.WebApp.HapticFeedback.impactOccurred("light");
 }
-
-/* =====================
-   INIT
-===================== */
 
 loadRates();
